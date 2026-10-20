@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Market Scenario Lab</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand">MSL</div>
+          <div>
+            <h1>Market Scenario Lab</h1>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <h2>Assets</h2>
+          <div id="asset-list" class="asset-list"></div>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Historical financial-cycle analysis</p>
+            <h2 id="page-title">MOEX</h2>
+          </div>
+          <button id="refresh-button">Refresh</button>
+        </header>
+
+        <section class="summary-grid">
+          <div class="card">
+            <span class="label">Asset</span>
+            <strong id="asset-name">—</strong>
+          </div>
+          <div class="card">
+            <span class="label">Current event</span>
+            <strong id="current-event">—</strong>
+          </div>
+          <div class="card">
+            <span class="label">Analog count</span>
+            <strong id="analog-count">0</strong>
+          </div>
+        </section>
+
+        <section class="content-grid">
+          <div class="card large-card">
+            <div class="section-header">
+              <h3>Scenario branches</h3>
+            </div>
+            <div id="scenario-list" class="scenario-list"></div>
+          </div>
+
+          <div class="card large-card">
+            <div class="section-header">
+              <h3>Historical analogs</h3>
+            </div>
+            <div id="analog-list" class="analog-list"></div>
+          </div>
+        </section>
+
+        <section class="card timeline-card">
+          <div class="section-header">
+            <h3>Recent events</h3>
+          </div>
+          <div id="event-list" class="event-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
