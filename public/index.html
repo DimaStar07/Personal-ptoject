@@ -1,23 +1,32 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Market Scenario Lab</title>
+    <title>Вероятностные сценарии рынка</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand-block">
-          <div class="brand">MSL</div>
+          <div class="brand">VA</div>
           <div>
-            <h1>Market Scenario Lab</h1>
+            <h1>Вероятностные сценарии</h1>
+            <p>исторические аналогии</p>
           </div>
         </div>
 
+        <nav class="sidebar-section nav">
+          <button class="nav-btn active" data-tab="today">Рынок сегодня</button>
+          <button class="nav-btn" data-tab="asset">Актив</button>
+          <button class="nav-btn" data-tab="event">Событие</button>
+          <button class="nav-btn" data-tab="analogs">Аналоги</button>
+          <button class="nav-btn" data-tab="status">Статус загрузки</button>
+        </nav>
+
         <div class="sidebar-section">
-          <h2>Assets</h2>
+          <h2>Активы</h2>
           <div id="asset-list" class="asset-list"></div>
         </div>
       </aside>
@@ -25,49 +34,21 @@
       <main class="main-panel">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Historical financial-cycle analysis</p>
-            <h2 id="page-title">MOEX</h2>
+            <p class="eyebrow">Информационная аналитическая платформа</p>
+            <h2 id="page-title">Рынок сегодня</h2>
           </div>
-          <button id="refresh-button">Refresh</button>
+          <button id="refresh-button">Обновить данные</button>
         </header>
 
-        <section class="summary-grid">
-          <div class="card">
-            <span class="label">Asset</span>
-            <strong id="asset-name">—</strong>
-          </div>
-          <div class="card">
-            <span class="label">Current event</span>
-            <strong id="current-event">—</strong>
-          </div>
-          <div class="card">
-            <span class="label">Analog count</span>
-            <strong id="analog-count">0</strong>
-          </div>
+        <section class="disclaimer" aria-live="polite">
+          Вероятности — модельные аналитические оценки на основе исторических аналогий, не гарантия и не персональная инвестиционная рекомендация.
         </section>
 
-        <section class="content-grid">
-          <div class="card large-card">
-            <div class="section-header">
-              <h3>Scenario branches</h3>
-            </div>
-            <div id="scenario-list" class="scenario-list"></div>
-          </div>
-
-          <div class="card large-card">
-            <div class="section-header">
-              <h3>Historical analogs</h3>
-            </div>
-            <div id="analog-list" class="analog-list"></div>
-          </div>
-        </section>
-
-        <section class="card timeline-card">
-          <div class="section-header">
-            <h3>Recent events</h3>
-          </div>
-          <div id="event-list" class="event-list"></div>
-        </section>
+        <section id="view-today" class="view active"></section>
+        <section id="view-asset" class="view"></section>
+        <section id="view-event" class="view"></section>
+        <section id="view-analogs" class="view"></section>
+        <section id="view-status" class="view"></section>
       </main>
     </div>
 
