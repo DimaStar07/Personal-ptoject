@@ -1,4 +1,5 @@
 const express = require('express');
+const config = require('../config');
 const {
   ensureInitialized,
   runIngestion,
@@ -9,7 +10,13 @@ const {
   getEventById,
   listAnalogs,
   marketToday,
-  getSignalJournal
+  getSignalJournal,
+  searchInstruments,
+  listInstrumentCatalog,
+  listNews,
+  getScenarioMap,
+  subscribeSse,
+  unsubscribeSse
 } = require('../services/pipelineService');
 
 const router = express.Router();
@@ -28,6 +35,25 @@ router.get('/health', (req, res) => {
     status: 'ok',
     service: 'probabilistic-market-scenarios',
     timestamp: new Date().toISOString()
+  });
+});
+
+router.get('/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  subscribeSse(res);
+
+  const heartbeat = setInterval(() => {
+    res.write(`event: heartbeat\ndata: ${JSON.stringify({ now: new Date().toISOString() })}\n\n`);
+  }, config.sseHeartbeatMs);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    unsubscribeSse(res);
+    res.end();
   });
 });
 
@@ -94,9 +120,41 @@ router.get('/scenarios/:symbol', (req, res) => {
   });
 });
 
+router.get('/scenario-map/:symbol', (req, res) => {
+  const map = getScenarioMap(req.params.symbol);
+  if (!map) {
+    return res.status(404).json({ error: 'Актив не найден' });
+  }
+  res.json(map);
+});
+
 router.get('/signals', (req, res) => {
   const limit = Math.min(200, Number(req.query.limit || 100));
   res.json({ items: getSignalJournal(limit) });
+});
+
+router.get('/catalog', (req, res) => {
+  res.json({ items: listInstrumentCatalog() });
+});
+
+router.get('/search/instruments', (req, res) => {
+  const limit = Math.min(200, Number(req.query.limit || 50));
+  const query = req.query.q || '';
+  const category = req.query.category || 'все';
+  res.json(searchInstruments({ query, category, limit }));
+});
+
+router.get('/news', (req, res) => {
+  const limit = Math.min(300, Number(req.query.limit || 100));
+  const topic = req.query.topic || 'все';
+  const source = req.query.source || 'all';
+  const hotOnly = req.query.hot === '1' || req.query.hot === 'true';
+  const symbol = req.query.symbol;
+  const q = req.query.q || '';
+
+  res.json({
+    items: listNews({ topic, source, q, symbol, hotOnly, limit })
+  });
 });
 
 module.exports = router;
