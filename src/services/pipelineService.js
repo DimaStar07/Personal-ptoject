@@ -34,7 +34,18 @@ function sha256(value) {
 }
 
 function sanitizeText(text = '') {
-  return String(text).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  return String(text)
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char]))
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function nowIso() {
