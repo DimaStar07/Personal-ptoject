@@ -35,7 +35,6 @@ function sha256(value) {
 
 function sanitizeText(text = '') {
   return String(text)
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
     .replace(/<[^>]*>/g, ' ')
     .replace(/[&<>"']/g, (char) => ({
       '&': '&amp;',
