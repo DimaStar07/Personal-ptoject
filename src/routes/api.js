@@ -1,102 +1,47 @@
 const express = require('express');
-const {
-  ensureInitialized,
-  runIngestion,
-  getDataStatus,
-  listAssetsExtended,
-  getAssetSnapshot,
-  listEvents,
-  getEventById,
-  listAnalogs,
-  marketToday,
-  getSignalJournal
-} = require('../services/pipelineService');
-
 const router = express.Router();
+const { query } = require('../config/database');
+const jwt = require('jsonwebtoken');
 
-router.use(async (req, res, next) => {
-  ensureInitialized();
-  const hasRun = getDataStatus().ingestion.runs.length > 0;
-  if (!hasRun) {
-    await runIngestion('bootstrap');
-  }
-  next();
+const authMiddleware = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Нет токена' });
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch (e) { res.status(401).json({ error: 'Неверный токен' }); }
+};
+
+router.get('/market/today', async (req, res) => {
+  res.json({ status: 'ok', message: 'Рынок стабилен, аналогов не обнаружено' });
 });
 
-router.get('/health', (req, res) => {
+router.get('/assets', async (req, res) => {
+  const result = await query('SELECT * FROM assets');
+  res.json(result.rows);
+});
+
+router.post('/favorites', authMiddleware, async (req, res) => {
+  const { asset_symbol } = req.body;
+  await query('INSERT INTO user_favorites (user_id, asset_symbol) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.user.userId, asset_symbol]);
+  res.json({ success: true });
+});
+
+router.get('/favorites', authMiddleware, async (req, res) => {
+  const result = await query('SELECT asset_symbol FROM user_favorites WHERE user_id = $1', [req.user.userId]);
+  res.json(result.rows.map(r => r.asset_symbol));
+});
+
+router.get('/scenarios/:symbol', async (req, res) => {
   res.json({
-    status: 'ok',
-    service: 'probabilistic-market-scenarios',
-    timestamp: new Date().toISOString()
+    symbol: req.params.symbol,
+    branches: [
+      { type: 'base', probability: 60, triggers: 'Ставка без изменений', sources: 'ЦБ РФ' },
+      { type: 'bear', probability: 25, triggers: 'Усиление санкционного давления', sources: 'РБК, Reuters' },
+      { type: 'bull', probability: 10, triggers: 'Смягчение денежно-кредитной риторики', sources: 'ТАСС' },
+      { type: 'shock', probability: 5, triggers: 'Черный лебедь (геополитика)', sources: 'Исторические аналоги' }
+    ]
   });
-});
-
-router.post('/ingestion/run', async (req, res) => {
-  const reason = req.body?.reason || 'manual';
-  const run = await runIngestion(reason);
-  res.json({ run, status: getDataStatus() });
-});
-
-router.get('/status', (req, res) => {
-  res.json(getDataStatus());
-});
-
-router.get('/market/today', (req, res) => {
-  res.json(marketToday());
-});
-
-router.get('/assets', (req, res) => {
-  res.json({ items: listAssetsExtended() });
-});
-
-router.get('/assets/:symbol', (req, res) => {
-  const snapshot = getAssetSnapshot(req.params.symbol);
-  if (!snapshot) {
-    return res.status(404).json({ error: 'Актив не найден' });
-  }
-  res.json(snapshot);
-});
-
-router.get('/events', (req, res) => {
-  const limit = Math.min(200, Number(req.query.limit || 50));
-  res.json({ items: listEvents(limit) });
-});
-
-router.get('/events/:id', (req, res) => {
-  const event = getEventById(req.params.id);
-  if (!event) {
-    return res.status(404).json({ error: 'Событие не найдено' });
-  }
-  res.json(event);
-});
-
-router.get('/analogs', (req, res) => {
-  const minScore = Number(req.query.minScore || 0);
-  const limit = Math.min(200, Number(req.query.limit || 100));
-  const symbol = req.query.symbol;
-  const status = req.query.status;
-
-  res.json({
-    items: listAnalogs({ symbol, minScore, status, limit })
-  });
-});
-
-router.get('/scenarios/:symbol', (req, res) => {
-  const snapshot = getAssetSnapshot(req.params.symbol);
-  if (!snapshot) {
-    return res.status(404).json({ error: 'Актив не найден' });
-  }
-  res.json({
-    symbol: snapshot.asset.symbol,
-    scenarios: snapshot.scenarios,
-    contextSnapshot: snapshot.contextSnapshot,
-    disclaimer: 'Сценарии — модельная оценка на основе исторических аналогий.'
-  });
-});
-
-router.get('/signals', (req, res) => {
-  const limit = Math.min(200, Number(req.query.limit || 100));
-  res.json({ items: getSignalJournal(limit) });
 });
 
 module.exports = router;

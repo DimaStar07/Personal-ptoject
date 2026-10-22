@@ -1,57 +1,93 @@
-<!doctype html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Вероятностные сценарии рынка</title>
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand-block">
-          <div class="brand">VA</div>
-          <div>
-            <h1>Вероятностные сценарии</h1>
-            <p>исторические аналогии</p>
-          </div>
-        </div>
-
-        <nav class="sidebar-section nav">
-          <button class="nav-btn active" data-tab="today">Рынок сегодня</button>
-          <button class="nav-btn" data-tab="asset">Актив</button>
-          <button class="nav-btn" data-tab="event">Событие</button>
-          <button class="nav-btn" data-tab="analogs">Аналоги</button>
-          <button class="nav-btn" data-tab="status">Статус загрузки</button>
-        </nav>
-
-        <div class="sidebar-section">
-          <h2>Активы</h2>
-          <div id="asset-list" class="asset-list"></div>
-        </div>
-      </aside>
-
-      <main class="main-panel">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Информационная аналитическая платформа</p>
-            <h2 id="page-title">Рынок сегодня</h2>
-          </div>
-          <button id="refresh-button">Обновить данные</button>
-        </header>
-
-        <section class="disclaimer" aria-live="polite">
-          Вероятности — модельные аналитические оценки на основе исторических аналогий, не гарантия и не персональная инвестиционная рекомендация.
-        </section>
-
-        <section id="view-today" class="view active"></section>
-        <section id="view-asset" class="view"></section>
-        <section id="view-event" class="view"></section>
-        <section id="view-analogs" class="view"></section>
-        <section id="view-status" class="view"></section>
-      </main>
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Scenario Lab</title>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="logo">Market Scenario Lab</div>
+    <div class="search-box">
+      <input type="text" id="assetSearch" placeholder="Поиск актива (SBER, GAZP, USD/RUB)...">
+      <div id="searchResults" class="search-results"></div>
     </div>
+    <div class="top-controls">
+      <button id="themeToggle">Тема</button>
+      <div id="authSection"></div>
+    </div>
+  </header>
+  
+  <div class="main-container">
+    <aside class="sidebar">
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" data-tab="news">Новости</button>
+        <button class="tab-btn" data-tab="scenarios">Сценарии</button>
+        <button class="tab-btn" data-tab="math">Математика</button>
+        <button class="tab-btn" data-tab="db">База данных</button>
+      </div>
+      <div class="sidebar-content">
+        <div id="newsTab" class="tab-content active">
+          <h3>Лента событий</h3>
+          <ul id="newsFeed"></ul>
+        </div>
+        <div id="scenariosTab" class="tab-content">
+          <h3>Дерево сценариев</h3>
+          <div id="scenarioTree"></div>
+        </div>
+        <div id="mathTab" class="tab-content">
+          <h3>Методология</h3>
+          <p><strong>Similarity Score:</strong><br>Sum(weight_i * component_i) - penalty</p>
+          <br>
+          <p><strong>Вероятности:</strong><br>Softmax(prior log-odds + evidence weights)</p>
+          <br>
+          <p><strong>Признаки:</strong><br>volatility, momentum, cycle phase, semantic tags</p>
+        </div>
+        <div id="dbTab" class="tab-content">
+          <h3>Статус источников</h3>
+          <p>РБК: Active</p>
+          <p>ТАСС: Active</p>
+          <p>Интерфакс: Active</p>
+          <p>Reuters: Active</p>
+          <br>
+          <p><em>Данные обновляются каждые 60 сек (Demo)</em></p>
+        </div>
+      </div>
+    </aside>
+    
+    <main class="content">
+      <div class="chart-container">
+        <div id="chart"></div>
+      </div>
+      <div class="info-panel">
+        <h2 id="currentAsset">SBER</h2>
+        <div class="asset-controls">
+          <button id="favBtn" class="heart-btn">В избранное</button>
+        </div>
+        <div id="assetDetails"></div>
+      </div>
+    </main>
+  </div>
 
-    <script src="/app.js"></script>
-  </body>
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="modalTitle">Вход</h2>
+      <form id="authForm">
+        <input type="text" id="username" placeholder="Никнейм (без мата)" required>
+        <input type="password" id="password" placeholder="Пароль" required>
+        <div id="captchaBox" style="display:none;">
+          <p id="captchaQuestion" style="font-weight:bold; color: var(--accent);"></p>
+          <input type="text" id="captchaAnswer" placeholder="Ответ на пример" required>
+        </div>
+        <button type="submit" id="authSubmit">Отправить</button>
+      </form>
+      <p id="authError" class="error"></p>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
 </html>
